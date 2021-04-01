@@ -3,13 +3,19 @@
 init:
 	move #$ac,d7	;start y position
 	move #1,d6	;y add
+	move $dff01c,d5
+	move #$7fff,$dff09a	;disable all bits in INTENA
+	
 **********************************************************************
 
 
 mainloop:
 wframe:
-	cmp.b #$ff,$dff006
+	btst #0,$dff005
 	bne wframe
+	cmp.b #$2c,$dff006
+	bne wframe
+	move.w #$000,$dff180
 	
 ;-------------frame loop start----------------------------------------
 	
@@ -46,6 +52,8 @@ waitras2:
 	bne mainloop
 	
 **********************************************************************
-
+exit:
+	or #$c000,d5
+	move d5,$dff09a
 	rts
 
