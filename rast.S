@@ -1,10 +1,23 @@
 ;-----------------ScoopexUS YouTube initial code----------------------
 
 init:
+
+	move.l	4.w,a6		:execbase
+	clr.l d0
+	move.l	#gfxname,a1
+	jsr -408(a6)		;oldopenlibrary()
+	move.l d0,a1
+	move.l 38(a1),d4	;original copper ptr
+	
+	jsr -414(a6)		;closelibrary()
+	
+	
 	move #$ac,d7	;start y position
 	move #1,d6	;y add
 	move $dff01c,d5
 	move #$7fff,$dff09a	;disable all bits in INTENA
+	
+	move.l #copper,$dff080
 	
 **********************************************************************
 
@@ -42,7 +55,7 @@ waitras1:
 waitras2:
 	cmp.b $dff006,d7
 	beq waitras2
-	move.w #$116,$dff180
+	move.w #$000,$dff180
 	
 ;-------------frame loop start----------------------------------------
 
@@ -53,7 +66,20 @@ waitras2:
 	
 **********************************************************************
 exit:
+	move.l d4,$dff080
 	or #$c000,d5
 	move d5,$dff09a
 	rts
 
+gfxname:
+	dc.b "graphics.library",0
+
+
+	SECTION tut,DATA_C
+
+
+
+Copper:
+	dc.w	$100,$0200
+	dc.w	$ffff,$fffe
+	
