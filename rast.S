@@ -28,7 +28,7 @@ wframe:
 	bne wframe
 	cmp.b #$2c,$dff006
 	bne wframe
-	move.w #$000,$dff180
+;	move.w #$000,$dff180
 	
 ;-------------frame loop start----------------------------------------
 	
@@ -55,7 +55,7 @@ waitras1:
 waitras2:
 	cmp.b $dff006,d7
 	beq waitras2
-	move.w #$000,$dff180
+	move.w #$113,$dff180
 	
 ;-------------frame loop start----------------------------------------
 
@@ -80,6 +80,23 @@ gfxname:
 
 
 Copper:
-	dc.w	$100,$0200
+	dc.w	$1fc,0		;slow fetch mode, AGA compatibility
+	dc.w	$100,$0200	;$df100
+	dc.w	$180,$349
+	dc.w 	$2b07,$fffe
+	dc.w 	$180,$56b
+	dc.w 	$2c07,$fffe
+	dc.w 	$180,$113
+
+	dc.w	$ffdf,$fffe	
+	dc.w 	$2c07,$fffe
+	dc.w 	$180,$56c
+	dc.w 	$2d07,$fffe
+	dc.w 	$180,$349
+	
+	
+	
+	
 	dc.w	$ffff,$fffe
 	
+	;yt 20 num 6	
