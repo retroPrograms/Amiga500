@@ -26,8 +26,12 @@ mainloop:
 wframe:
 	btst #0,$dff005
 	bne wframe
-	cmp.b #$2c,$dff006
+	cmp.b #$2a,$dff006
 	bne wframe
+wframe2:	
+	cmp.b #$2a,$dff006
+	beq wframe2
+
 ;	move.w #$000,$dff180
 	
 ;-------------frame loop start----------------------------------------
@@ -45,17 +49,20 @@ ok1:
 	neg d6		;change direction
 	
 ok2:
+	
+	move.b d7,waitras1		
+	move.b d7,waitras2		
+			
+;waitras1:
+;	cmp.b $dff006,d7
+;	bne waitras1
+;	move.w #$fff,$dff180
 
-waitras1:
-	cmp.b $dff006,d7
-	bne waitras1
-	move.w #$fff,$dff180
 
-
-waitras2:
-	cmp.b $dff006,d7
-	beq waitras2
-	move.w #$113,$dff180
+;waitras2:
+;	cmp.b $dff006,d7
+;	beq waitras2
+;	move.w #$113,$dff180
 	
 ;-------------frame loop start----------------------------------------
 
@@ -87,6 +94,15 @@ Copper:
 	dc.w 	$180,$56b
 	dc.w 	$2c07,$fffe
 	dc.w 	$180,$113
+
+
+waitras1:
+	dc.w 	$8007,$fffe
+	dc.w 	$180,$fff
+waitras2:	
+	dc.w 	$80df,$fffe
+	dc.w 	$180,$113
+
 
 	dc.w	$ffdf,$fffe	
 	dc.w 	$2c07,$fffe
