@@ -6,13 +6,25 @@ start:
 decode:
 	lea buffer,a0	
 	lea cypher,a1
+	lea key,a2
 
-loop:
-	move.b (a1),d0
+loop:	
+	move.b (a1),d0    ;get cypher
+	cmpi 255,d0	  ;is EOF?
+	beq out		  ;yes, return
 	
-	move.b d0,(a0)	
+	move.b (a2),d1	  ;get key
+	;lea  1,a2
+	
+	eor d1,d0
+	
+	move.b d0,(a0)
 	
 	
+	
+	bra loop	
+	
+out:	
 	rts
 	
 	
