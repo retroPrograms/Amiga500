@@ -1,31 +1,33 @@
 start:
-	bsr decode
-	rts
-		
-	
-decode:
-	lea buffer,a0	
-	lea cypher,a1
-	lea key,a2
+		lea	cypher,a0
+		lea	buffer,a1
+		lea 	key,a2
+		move.l	#0,d0	;for cypher,buffer
+		move.l 	#0,d2	;for key
+loop:
 
-loop:	
-	move.b (a1),d0    ;get cypher
-	cmpi 255,d0	  ;is EOF?
-	beq out		  ;yes, return
-	
-	move.b (a2),d1	  ;get key
-	;lea  1,a2
-	
-	eor d1,d0
-	
-	move.b d0,(a0)
-	
-	
-	
-	bra loop	
-	
-out:	
-	rts
+		move.b	(a2,d2),d3	;get next key
+		add.l	#1,d2
+		cmp	#3,d2
+		bne	key_ok
+		move.l	#0,d2
+		
+key_ok:
+		move.b	(a0,d0),d1	;get cypher num
+		
+		cmp #255,d1
+		beq finished
+
+				
+		eor d3,d1		;xor cypher num and key
+		
+		move.b d1,(a1,d0)
+		add.l	#1,d0
+		
+		bra loop
+
+finished:
+		rts
 	
 	
 buffer:	   DCB.B 2000	
