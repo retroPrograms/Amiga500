@@ -38,7 +38,7 @@ waitras1:
 waitras2:
 	cmp.b	$dff006,d7
 	beq	waitras2
-	move.w	#$126,$dff180
+	move.w	#$000,$dff180
 
 
 ;-------------frame loop stop  --------------------------------------
@@ -52,4 +52,6 @@ exit:
 	move d5,$dff09a
 	rts
 
-
+Copper:
+	dc.w	$100,$0200
+	dc.w	$ffff,$fffe	;5 copper 5.31 time
