@@ -1,111 +1,38 @@
-OpenLib		=       -30-378	
-closelib	=	-414
-ExecBase	=	4
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+	;Console INIT
+		
+	SECTION TEXT		;CODE Section
 
-Open		=	-30
-Close		=	-30-6
-Write		=	-48
-IoErr		=	-132
-mode_old	=	1005
-alloc_abs	=	-$cc
+        ;jsr deCypher
+	
+	lea dosname,a1 		;'dos.library' defined in chip ram
+	moveq.l	#0,d0		;Version
+	move.l	$4,a6		;Load base for call from addr $4
+	jsr	(-552,a6)		;Exec - Openlibrary - return DosBase in D0
+	
+	move.l d0,(DosHandle);Save DOS Base to handle name
+	
+	move.l d0,a6		;Dos base
+	move.l #consolename,d1;'CONSOLE:'
+	move.l #1005,d2		;ModeOld
+	jsr	(-30,a6)		;Dos: Open (D0=Console Handle)
 
-run:
-      ;jsr deCypher
-	bsr	init
-	bsr	test
-       
-	nop
-	bra	qu
+	move.l d0,(ConsoleHandle)	;Save Console Handle
 	
-test:
-	move.l	#title,d0
-	bsr	pmsg
-	bsr	pcrlf
-	bsr	pcrlf
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+	;Program Starts here
+	
+	;lea Message,a3
+       lea buffer,a3
+	jsr PrintString		;Show String Message
 
-      jsr   deCypher
+	jsr NewLine			;Start a new line	
+	
+	rts					;Return to OS
+	;jmp *				;Halt Program
 
-waitmouse:
-       btst #6,$bfe001
-       bne waitmouse
-       rts
-	
-	rts
-	
-init:
-	move.l	ExecBase,a6
-	lea	dosname(pc),a1 ;dosname(pc),al
-	moveq	#0,d0
-	jsr	openlib(a6)
-	move.l	d0,dosbase
-	beq	error
-	
-	lea 	consolname(pc),a1
-	move.l	#mode_old,d0
-	jsr	openfile
-	beq	error
-	move.l	d0,conhandle
-	rts
-
-pmsg:
-	movem.l	d0-d7/a0-a6,-(sp)
-	move.l	d0,a0
-	move.l	a0,d2
-	clr.l	d3
-ploop:
-	tst.b	(a0)+
-	beq	pmsg2
-	addq.l	#1,d3
-	bra	ploop
-pmsg2:
-	move.l	conhandle,d1
-	move.l	dosbase,a6
-	jsr	write(a6)
-	movem.l	(sp)+,d0-d7/a0-a6
-	rts
-	
-pcrlf:
-	move	#10,d0
-	bsr	pchar
-	move	#13,d0
-pchar:
-	movem.l	d0-d7/a0-a6,-(sp)
-	move.l	conhandle,d1
-pch1:
-	lea	outline,a1
-	move.b	d0,(a1)
-	move.l	a1,d2
-	move.l	#1,d3
-	move.l	dosbase,a6
-	jsr	write(a6)
-	movem.l	(sp)+,d0-d7/a0-a6
-	rts
-	
-error:
-	move.l	dosbase,a6
-	jsr	IoErr(a6)
-	move.l	d0,d5
-	move.l	#-1,d7
-qu:
-	move.l	conhandle,d1
-	move.l	dosbase,a6
-	jsr	close(a6)
-	move.l	dosbase,a1
-	move.l 	ExecBase,a6
-	jsr	closelib(a6)
-	
-openfile:
-	move.l	a1,d1
-	move.l	d0,d2
-	move.l	dosbase,a6
-	jsr	open(a6)
-	tst.l	d0
-	rts
 
 deCypher:
-            
-              movem.l	d0-d7/a0-a6,-(sp)
-	
 		lea	cypher,a0
 		lea	buffer,a1
 		lea 	key,a2
@@ -128,42 +55,64 @@ key_ok:
 				
 		eor d3,d1		;xor cypher num and key
 		
-		move.b d1,(a1,d0)
-		add.l	#1,d0
+		;move.b d1,(a1,d0)
+		;add.l	#1,d0
+
+             move.b d1,(a1)
+             add.l  #1,a1
 		
 		bra loop
 
 finished:
-            movem.l	(sp)+,d0-d7/a0-a6
+            move.b  #255,d1
+            move.b  d1,(a1)
 		rts
 	
-dosname:
-	dc.b	 'dos.library',0,0
+Message:    dc.b 'Hello World',255
 	even
-dosbase:
-	dc.l	0
-	
-consolname:
-	dc.b 'CON:0/100/640/100/My Screen',0
-	even
-conhandle:
-	dc.l 0
-title2:
-	dc.b '** Welcome to this program! **'
-outline2:
-	dc.w 0	
 
-title:
-        dc.b 'Soc. And you remember how we said that the children of the good parents were to be educated, and the children of the bad secretly dispersed among the inferior citizens; and while they were all growing up the rulers were to be on the look-out, and to bring up from below in their turn those who were worthy, and those among themselves who were unworthy were to take the places of those who came up?'
-outline:
-        dc.w 0
-        
-buffer:	   DCB.B 2000	
+PrintChar:
+	moveM.l d0-d3/a0,-(sp)
+		move.b d0,(CharBuffer)		;Save character into buffer
+		
+		move.l (doshandle),a0		;Dos Handle
+		move.l (consolehandle),d1	;Console handle
+		move.l #CharBuffer,d2		;Dosbase in a6
+		move.l #1,d3				;buffer length (1 byte)
+		jsr	(-48,a0)				;Call "Dos: Write"
+		
+	moveM.l (sp)+,d0-d3/a0
+	rts
+	
+
+
+PrintString:
+	move.b (a3)+,d0		;Read a character in from A3
+	cmp.b #255,d0
+	beq PrintString_Done;return on 255
+	jsr PrintChar		;Print the Character
+	;bra PrintString
+PrintString_Done:		
+	rts
+
+NewLine:
+	move.b #$0D,d0		;Char 13 CR
+	jsr PrintChar
+	move.b #$0A,d0		;Char 10 LF
+	jsr PrintChar
+	rts
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+	
+dosname: 		dc.b 'dos.library',0	;Library name
+consolename:  	dc.b  'CONSOLE:',0		;Console handle
+
+
 	
 key:       DC.B $67, $6f, $64
 
 cypher:  
-	   DC.B 79,59,12,2,79,35,8,28,20,2,3,68,8,9,68,45,0,12,9,67
+	   DC.B 79,59,12,2,79,35,8,28,20,2,3,68,8,9,68,45,0,12,9,67,255
 	   DC.B 68,4,7,5,23,27,1,21,79,85,78,79,85,71,38,10,71,27,12
 	   DC.B 2,79,6,2,8,13,9,1,13,9,8,68,19,7,1,71,56,11,21,11,68
 	   DC.B 6,3,22,2,14,0,30,79,1,31,6,23,19,10,0,73,79,44,2,79
@@ -222,3 +171,15 @@ cypher:
 
 
 
+
+	even
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+	;Chip Ram
+		
+	Section ChipRAM,Data_c	;Request 'Chip Ram' area memory 
+								
+DosHandle: 		dc.l 0			;Dos Handle
+ConsoleHandle: 	dc.l 0			;Console Handle
+CharBuffer: 	dc.b 0			;Character we want to print
+buffer:	   DCB.B 4000 dup(36)
