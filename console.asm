@@ -24,6 +24,9 @@
 	lea Message,a3
        
 	jsr PrintString		;Show String Message
+       jsr NewLine
+        
+       jsr PrintStr 
 
 	jsr NewLine			;Start a new line	
 	
@@ -33,8 +36,21 @@
 
 
 	
-Message:    dc.b 'Hello World!',255
+Message:    dc.b 'Hello World2',255
 	even
+
+PrintStr:
+	moveM.l d0-d3/a0,-(sp)
+		;move.b d0,(CharBuffer)		;Save character into buffer
+		;move.l    
+		move.l (doshandle),a0		;Dos Handle
+		move.l (consolehandle),d1	;Console handle
+		move.l #strBuffer,d2		;Dosbase in a6
+		move.l #12,d3				;buffer length (1 byte)
+		jsr	(-48,a0)				;Call "Dos: Write"
+		
+	moveM.l (sp)+,d0-d3/a0
+	rts
 
 PrintChar:
 	moveM.l d0-d3/a0,-(sp)
@@ -85,3 +101,4 @@ consolename:  	dc.b  'CONSOLE:',0		;Console handle
 DosHandle: 		dc.l 0			;Dos Handle
 ConsoleHandle: 	dc.l 0			;Console Handle
 CharBuffer: 	dc.b 0			;Character we want to print
+strBuffer: 	dc.b "Hello World1"			;Character we want to print
