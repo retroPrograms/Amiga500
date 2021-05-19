@@ -25,7 +25,9 @@
        
 	jsr PrintString		;Show String Message
        jsr NewLine
-        
+       
+       move.b #15,(strLen)
+       move.l #strBuffer,d2 
        jsr PrintStr 
 
 	jsr NewLine			;Start a new line	
@@ -45,8 +47,11 @@ PrintStr:
 		;move.l    
 		move.l (doshandle),a0		;Dos Handle
 		move.l (consolehandle),d1	;Console handle
-		move.l #strBuffer,d2		;Dosbase in a6
-		move.l #12,d3				;buffer length (1 byte)
+		;move.l #strBuffer,d2		;Dosbase in a6
+             move.l #0,d3
+             move.b (strLen),d3
+
+		;move.l #15,d3				;buffer length (1 byte)
 		jsr	(-48,a0)				;Call "Dos: Write"
 		
 	moveM.l (sp)+,d0-d3/a0
@@ -101,4 +106,6 @@ consolename:  	dc.b  'CONSOLE:',0		;Console handle
 DosHandle: 		dc.l 0			;Dos Handle
 ConsoleHandle: 	dc.l 0			;Console Handle
 CharBuffer: 	dc.b 0			;Character we want to print
-strBuffer: 	dc.b "Hello World1"			;Character we want to print
+
+strBuffer: 	dc.b "Hello World1****"			;Character we want to print
+strLen:      dc.b 0                                     ;string length
