@@ -21,6 +21,12 @@
        
        jsr NewLine
        jsr NewLine
+       
+       lea Message4,a3
+       jsr PrintString
+       
+       jsr NewLine
+       jsr NewLine
 	
 	rts					;Return to OS
 	
@@ -90,6 +96,9 @@ message2:
     
 message3:
     dc.b "      Memory Test:  ",255
+    
+message4:
+    dc.b "      Dial the Gate:  ",255
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
 	;Chip Ram
